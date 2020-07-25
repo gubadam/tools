@@ -26,13 +26,13 @@ I use this configuration to ensure all Windows 10 machines within a specific OU 
 ## Short description
 When a computer is placed in a specific OU, a GPO is being applied with a shutdown script enabled.
 This script then copies another script and schedules a task to run copied script as a System account during any user logon.
-When any user logs into the machine the encryption is started (with some extra steps ensuring all the requirements from the **Goal** section are applied)
+When any user logs into the machine the encryption is started (with some extra steps ensuring all the requirements from the [Goal](#goal) section are applied)
 
 ## Detailed description
 ### Flowchart
 <details>
 <summary>Click to see the flowchart</summary>
-<img src="BitlockerChart.png" alt="BitlockerEnforce flowchart">
+<img src="img/BitlockerChart.png" alt="BitlockerEnforce flowchart">
 </details>
 
 ### WMI filtering
@@ -63,7 +63,10 @@ Source: [docs.microsoft.com](https://docs.microsoft.com/en-us/windows/security/t
     * "Allow BitLocker without a compatible TPM (requires a password or a startup key on a USB flash drive)" is enabled
     * "Configure TPM startup" is set to "Allow TPM"
 
-Have a look at [Bitlocker_SettingsAndSchedule.html](.\Bitlocker_SettingsAndSchedule.html) for a full report generated with [Get-GPOReport](https://docs.microsoft.com/en-us/powershell/module/grouppolicy/get-gporeport) cmdlet.
+<details>
+<summary>Click to see the full report of this GPO</summary>
+<img src="img/BitlockerGPO.png" alt="BitlockerGPO report">
+</details>
 
 ### BitlockerSchedule.ps1
 * Copies BitlockerEnable.ps1 from the SYSVOL share on the domain controller to the local machine
