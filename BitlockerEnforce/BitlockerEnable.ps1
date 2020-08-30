@@ -48,11 +48,11 @@ Foreach ($currentDrive in $drives){
                 # If there's no TPM, add a password for unblocking the drive
                 $SecureString = ConvertTo-SecureString $password -AsPlainText -Force
                 Enable-BitLocker -MountPoint $currentDrive -EncryptionMethod $encryptionMethod -Password $SecureString -PasswordProtector -SkipHardwareTest *>>$recoveryKeyFile
-                
-                # Autounlock the drive if it's not a system drive (it will be unlocked without the need to provide the password for each drive)
-                if($currentDrive -ne $env:SystemDrive){
-                    Enable-BitLockerAutoUnlock -MountPoint $currentDrive
-                }
+            }
+            
+            # Autounlock the drive if it's not a system drive (it will be unlocked without the need to provide the password for each drive)
+            if($currentDrive -ne $env:SystemDrive){
+                Enable-BitLockerAutoUnlock -MountPoint $currentDrive
             }
         }
     } 
