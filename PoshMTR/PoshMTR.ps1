@@ -1,10 +1,14 @@
 function PoshMTR{
 
     param(
+        [Parameter(mandatory=$true)]
         $Target,
-        $Timeout = 1000,
+        $Timeout = 500,
         $RetryCount = 10
     )
+
+    # Used for updating the display instead of re-drawing
+    $originalCursorPosition = $host.UI.RawUI.CursorPosition
 
     # Setup ping
     $ping = New-Object -TypeName System.Net.NetworkInformation.Ping
@@ -22,25 +26,50 @@ function PoshMTR{
         $hosts += if ($address -ne $null) {$address} else {"Non-reachable"}
     } while ($pingReply.Status -ne "Success")
 
-    # Here are all the discovered hosts
-    # $hosts | ft
+    # Setup a result object
+    $results = @()
+    foreach ($_ in 0..($hosts.Length-1)){
+        $results += [PSCustomObject]@{
+            ID = $_
+            Host = $hosts[$_]
+            Loss = "0%"
+            Sent = 0
+            Rcvd = 0
+            Lost = 0 
+            Last = 0
+            Avrg = 0
+            Best = 0
+            Wrst = 0
+        }
+    }
 
     # Continuous ping on all hosts along the route
     $retries = (1 .. $RetryCount)
     foreach ($try in $retries){
-
         $pingOptions.Ttl = 1
-        $results = @()
-
-        foreach ($address in $hosts){
-            $pingReply = $ping.Send($address, $Timeout , $pingBuffer, $pingOptions)
+        foreach ($_ in 0..($hosts.Length-1)){
+            if ($hosts[$_] -ne "Non-reachable"){
+                $pingReply = $ping.Send($hosts[$_], $Timeout , $pingBuffer, $pingOptions)
+                $results[$_].Sent++
+                if ($pingReply.Status -eq "Success"){
+                    $results[$_].Rcvd++
+                    $results[$_].Last = $pingReply.RoundtripTime
+                    if ($results[$_].Best -gt $pingReply.RoundtripTime -or $_ -eq 1) {$results[$_].Best = $pingReply.RoundtripTime}
+                    if ($results[$_].Wrst -lt $pingReply.RoundtripTime) {$results[$_].Wrst = $pingReply.RoundtripTime}
+                    $results[$_].Avrg = [math]::Round(($results[$_].Avrg*($results[$_].Rcvd-1)+$results[$_].Last)/$results[$_].Rcvd,1)        
+                }else{
+                    $results[$_].Lost++
+                }
+                $results[$_].Loss = "$([math]::Round($results[$_].Lost*100/$results[$_].Sent,1))%"
+            }else{
+                $results[$_].Loss = "100%"
+            }
             $pingOptions.Ttl +=1
-            $results += $pingReply | select Status, Address, RoundtripTime, Buffer
         }
-        Clear-Host
-        Write-Host "### Packet $try ###"
-        $results | ft Status, Address, RoundtripTime
+
+        # Reset cursor and update display
+        $host.UI.RawUI.CursorPosition = $originalCursorPosition
+        $originalCursorPosition = $host.UI.RawUI.CursorPosition
+        $results | ft ID, Host, Loss, Sent, Last, Avrg, Best, Wrst
     }
-    Write-Host "Route was:"
-    $hosts | ft
 }
