@@ -1,5 +1,9 @@
 # PoshMTR
 
-Built in powershell for when you can't install or run new software, but have unrestricted access to PoSH
+Ping all hosts along the route to the target host and provide statistics over set ammount of retries
+
+Example:
+
+![Example1](img/example1.jpg?raw=true)
 
 Inspired by https://github.com/traviscross/mtr
