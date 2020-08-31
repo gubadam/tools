@@ -3,7 +3,7 @@ function PoshMTR{
     param(
         [Parameter(mandatory=$true)]
         $Target,
-        $Timeout = 500,
+        $Timeout = 1000,
         $RetryCount = 10
     )
 
@@ -54,7 +54,7 @@ function PoshMTR{
                 if ($pingReply.Status -eq "Success"){
                     $results[$_].Rcvd++
                     $results[$_].Last = $pingReply.RoundtripTime
-                    if ($results[$_].Best -gt $pingReply.RoundtripTime -or $_ -eq 1) {$results[$_].Best = $pingReply.RoundtripTime}
+                    if ($results[$_].Best -gt $pingReply.RoundtripTime -or $try -eq 1) {$results[$_].Best = $pingReply.RoundtripTime}
                     if ($results[$_].Wrst -lt $pingReply.RoundtripTime) {$results[$_].Wrst = $pingReply.RoundtripTime}
                     $results[$_].Avrg = [math]::Round(($results[$_].Avrg*($results[$_].Rcvd-1)+$results[$_].Last)/$results[$_].Rcvd,1)        
                 }else{
