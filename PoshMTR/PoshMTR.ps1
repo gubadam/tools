@@ -37,6 +37,7 @@ function PoshMTR{
             Rcvd = 0
             Lost = 0 
             Last = 0
+            Sum = 0
             Avrg = 0
             Best = 0
             Wrst = 0
@@ -54,22 +55,36 @@ function PoshMTR{
                 if ($pingReply.Status -eq "Success"){
                     $results[$_].Rcvd++
                     $results[$_].Last = $pingReply.RoundtripTime
+                    $results[$_].Sum += $pingReply.RoundtripTime
                     if ($results[$_].Best -gt $pingReply.RoundtripTime -or $try -eq 1) {$results[$_].Best = $pingReply.RoundtripTime}
                     if ($results[$_].Wrst -lt $pingReply.RoundtripTime) {$results[$_].Wrst = $pingReply.RoundtripTime}
-                    $results[$_].Avrg = [math]::Round(($results[$_].Avrg*($results[$_].Rcvd-1)+$results[$_].Last)/$results[$_].Rcvd,1)        
+                    $results[$_].Avrg = [math]::Round($results[$_].Sum/$results[$_].Rcvd,1)        
                 }else{
                     $results[$_].Lost++
                 }
                 $results[$_].Loss = "$([math]::Round($results[$_].Lost*100/$results[$_].Sent,1))%"
+                $results[$_].Loss = $results[$_].Lost/$results[$_].Sent
             }else{
-                $results[$_].Loss = "100%"
+                $results[$_].Loss = 1
             }
             $pingOptions.Ttl +=1
         }
 
-        # Reset cursor and update display
+        # Clear display
         $host.UI.RawUI.CursorPosition = $originalCursorPosition
-        $originalCursorPosition = $host.UI.RawUI.CursorPosition
-        $results | ft ID, Host, Loss, Sent, Last, Avrg, Best, Wrst
+        foreach ($_ in (0..$hosts.Length)){
+            Write-Host "`n"
+        }
+
+        # Display output
+        $host.UI.RawUI.CursorPosition = $originalCursorPosition
+        $results | ft   ID, 
+                        Host,  
+                        @{Label="Loss"; Expression={"{0:p1}" -f $_.Loss}}, 
+                        Sent, 
+                        Last, 
+                        @{Label="Avrg"; Expression={"{0:f1}" -f $_.Avrg}}, 
+                        Best, 
+                        Wrst
     }
 }
