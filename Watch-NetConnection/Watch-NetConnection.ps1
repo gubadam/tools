@@ -3,9 +3,9 @@ function Watch-NetRoute{
     param(
         [Parameter(mandatory=$true)]
         $Targets = @(),
-        $Timeout = 1000,
-        $RetryCount = 10,
-        [Switch] $Repeat,
+        [Alias("w")]$Timeout = 1000,
+        [Alias("n")]$RetryCount = 10,
+        [Alias("t")][Switch] $Repeat,
         [Switch] $NoNewWindow
     )
 
