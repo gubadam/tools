@@ -1,5 +1,5 @@
-function PoshMTR{
-
+function Test-NetRoute{
+    [Alias("mtr")]
     param(
         [Parameter(mandatory=$true)]
         $Target,
@@ -56,8 +56,12 @@ function PoshMTR{
                     $results[$_].Rcvd++
                     $results[$_].Last = $pingReply.RoundtripTime
                     $results[$_].Sum += $pingReply.RoundtripTime
-                    if ($results[$_].Best -gt $pingReply.RoundtripTime -or $try -eq 1) {$results[$_].Best = $pingReply.RoundtripTime}
-                    if ($results[$_].Wrst -lt $pingReply.RoundtripTime) {$results[$_].Wrst = $pingReply.RoundtripTime}
+                    if ($results[$_].Best -gt $pingReply.RoundtripTime -or $try -eq 1) {
+                        $results[$_].Best = $pingReply.RoundtripTime
+                    }
+                    if ($results[$_].Wrst -lt $pingReply.RoundtripTime) {
+                        $results[$_].Wrst = $pingReply.RoundtripTime
+                    }
                     $results[$_].Avrg = [math]::Round($results[$_].Sum/$results[$_].Rcvd,1)        
                 }else{
                     $results[$_].Lost++
