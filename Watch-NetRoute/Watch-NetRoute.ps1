@@ -1,10 +1,11 @@
-function Test-NetRoute{
+function Watch-NetRoute{
     [Alias("mtr")]
     param(
         [Parameter(mandatory=$true)]
-        $Targets = @(),
+        $Target,
         $Timeout = 1000,
-        $RetryCount = 10
+        $RetryCount = 10,
+        [Switch]$Continuous
     )
 
     # Used for updating the display instead of re-drawing
@@ -18,7 +19,7 @@ function Test-NetRoute{
     $pingOptions.Ttl = 1
 
     # Discover hosts along the route
-    $hosts = @()
+    $hosts = @("127.0.0.1")
     do {  
         $pingReply = $ping.Send($Target, $Timeout , $pingBuffer, $pingOptions)
         $pingOptions.Ttl +=1
@@ -45,8 +46,8 @@ function Test-NetRoute{
     }
 
     # Continuous ping on all hosts along the route
-    $retries = (1 .. $RetryCount)
-    foreach ($try in $retries){
+    $try = 0
+    while($Continuous -or $try++ -lt $RetryCount){
         $pingOptions.Ttl = 1
         foreach ($_ in 0..($hosts.Length-1)){
             if ($hosts[$_] -ne "Non-reachable"){
@@ -79,6 +80,18 @@ function Test-NetRoute{
         foreach ($_ in (0..$hosts.Length)){
             Write-Host "`n"
         }
+
+        # Save current output to the file
+        $log = get-date -Format "yyyy/MM/dd-HH:mm:ss"
+        $log += $results | ft   ID, 
+                                Host,  
+                                @{Label="Loss"; Expression={"{0:p1}" -f $_.Loss}}, 
+                                Sent, 
+                                Last, 
+                                @{Label="Avrg"; Expression={"{0:f1}" -f $_.Avrg}}, 
+                                Best, 
+                                Wrst | Out-String
+        Out-File -FilePath "C:\temp\mtr_$(Get-Date -Format yyyyMMdd-HHmm_)$env:computername.log" -Append -InputObject $log
 
         # Display output
         $host.UI.RawUI.CursorPosition = $originalCursorPosition

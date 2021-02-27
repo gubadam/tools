@@ -1,4 +1,4 @@
-function Watch-NetRoute{
+function Watch-NetConnection{
     [Alias("ping2")]
     param(
         [Parameter(mandatory=$true)]
